@@ -3,8 +3,6 @@ const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
 const Person = require('./models/person')
-const { default: mongoose } = require('mongoose')
-const { request, response } = require('express')
 
 let persons = []
 
@@ -14,7 +12,7 @@ app.use(express.json())
 app.use(cors())
 app.use(express.static('dist'))
 
-morgan.token('post', function (request, response) {
+morgan.token('post', function (request) {
   if (request.method === 'POST') {
     return JSON.stringify(request.body)
   }
@@ -46,7 +44,7 @@ app.get('/info', (request, response) => {
     <p>Phonebook has info for ${result.length} people</p>
     <p>${time}</p>`)
   })
-  
+
 })
 
 app.get('/api/persons', (request, response) => {
@@ -69,7 +67,7 @@ app.get('/api/persons/:id', (request, response, next) => {
 
 app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndDelete(request.params.id)
-    .then(result => {
+    .then(() => {
       response.status(204).end()
     })
     .catch(error => next(error))
@@ -79,11 +77,11 @@ app.post('/api/persons', (request, response, next) => {
   const body = request.body
 
   if (!body.name || !body.number) {
-    return response.status(400).json({ 
-      error: 'name or number missing' 
+    return response.status(400).json({
+      error: 'name or number missing'
     })
-  } 
-  
+  }
+
   if (persons.some(p => p.name === body.name)) {
     return response.status(400).json({
       error: 'name must be unique'
@@ -107,10 +105,10 @@ app.put('/api/persons/:id', (request, response, next) => {
   const { name, number } = request.body
 
   Person.findByIdAndUpdate(
-    request.params.id, 
-    { name, number }, 
-    {new: true, runValidators: true, context: 'query'}
-    )
+    request.params.id,
+    { name, number },
+    { new: true, runValidators: true, context: 'query' }
+  )
     .then(updatedPerson => {
       response.json(updatedPerson)
     })
